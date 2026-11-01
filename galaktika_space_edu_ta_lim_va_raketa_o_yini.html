@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaktika Space Edu - eMaktab & Raketa O'yini</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        space: {
+                            bg: '#040714',
+                            card: 'rgba(11, 16, 38, 0.85)',
+                            cyan: '#00f2fe',
+                            purple: '#7928ca',
+                            pink: '#ff0080',
+                            gold: '#ffb703',
+                            green: '#00ff88'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        rajdhani: ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #040714;
+            color: #f1f5f9;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .font-tech {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Glassmorphism styling */
+        .glass-panel {
+            background: rgba(12, 18, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 242, 254, 0.25);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
+        }
+
+        .glass-card {
+            background: rgba(18, 25, 55, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.35);
+        }
+
+        .glow-purple {
+            box-shadow: 0 0 20px rgba(121, 40, 202, 0.4);
+        }
+
+        .glow-gold {
+            box-shadow: 0 0 20px rgba(255, 183, 3, 0.4);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(5, 8, 20, 0.8);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 242, 254, 0.4);
+            border-radius: 4px;
+        }
+
+        /* Dynamic Space Background */
+        #stars-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative bg-space-bg">
+
+    <!-- Background Space Canvas -->
+    <canvas id="stars-canvas"></canvas>
+
+    <div class="relative z-10 flex flex-col min-h-screen">
+        <!-- TOP NAVIGATION BAR -->
+        <header class="w-full px-4 sm:px-8 py-3 glass-panel border-b border-space-cyan/30 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-space-purple via-space-cyan to-space-green p-0.5 flex items-center justify-center glow-cyan">
+                    <div class="w-full h-full bg-space-bg rounded-[14px] flex items-center justify-center">
+                        <i class="fa-solid fa-rocket text-space-cyan text-xl"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black font-tech tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-space-cyan via-white to-space-gold">
+                        GALAKTIKA <span class="text-xs px-2 py-0.5 rounded bg-space-cyan/20 text-space-cyan border border-space-cyan/40 font-mono">SPACE EDU</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 font-semibold hidden sm:block">Parol Bilan Xavfsiz eMaktab & Raketa Matematika Tizimi</p>
+                </div>
+            </div>
+
+            <!-- ROLE SWITCHER TABS -->
+            <div class="flex items-center gap-1 sm:gap-2 bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800">
+                <button onclick="requestRoleAccess('teacher')" id="tab-teacher" class="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold font-tech transition flex items-center gap-2 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-chalkboard-user"></i> <span class="hidden sm:inline">O'qituvchi</span>
+                </button>
+                <button onclick="requestRoleAccess('parent')" id="tab-parent" class="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold font-tech transition flex items-center gap-2 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-users"></i> <span class="hidden sm:inline">Ota-ona</span>
+                </button>
+                <button onclick="requestRoleAccess('student')" id="tab-student" class="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold font-tech transition flex items-center gap-2 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-gamepad"></i> <span class="hidden sm:inline">O'quvchi & O'yin</span>
+                </button>
+            </div>
+
+            <!-- Controls & Sound & Lock -->
+            <div class="flex items-center gap-3">
+                <button onclick="lockCurrentSession()" class="px-3 py-2 rounded-xl glass-card text-xs font-bold font-tech text-space-pink border border-space-pink/40 hover:bg-space-pink/20 transition flex items-center gap-2" title="Tizimni qulflash">
+                    <i class="fa-solid fa-lock"></i> <span class="hidden md:inline">Qulflash</span>
+                </button>
+                <button onclick="toggleSound()" id="sound-btn" class="w-10 h-10 rounded-xl glass-card hover:bg-slate-800/80 flex items-center justify-center text-space-cyan border border-space-cyan/30">
+                    <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-grow p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+
+            <!-- LOCKED / LANDING WELCOME BANNER -->
+            <section id="sec-locked" class="glass-panel p-8 sm:p-12 rounded-3xl border border-space-cyan/50 text-center max-w-2xl mx-auto my-12 space-y-6 glow-cyan">
+                <div class="w-24 h-24 rounded-3xl bg-gradient-to-tr from-space-purple via-space-cyan to-space-green p-1 mx-auto glow-cyan">
+                    <div class="w-full h-full bg-slate-950 rounded-[22px] flex items-center justify-center">
+                        <i class="fa-solid fa-shield-halved text-space-cyan text-4xl"></i>
+                    </div>
+                </div>
+                <h2 class="text-3xl font-black font-tech text-white">XAVFSIZLIK PAROL TIZIMI</h2>
+                <p class="text-sm text-slate-300">
+                    Kabinetlarga kirish uchun yuqoridagi **O'qituvchi**, **Ota-ona** yoki **O'quvchi** tugmalarini bosing va maxsus PIN-parolni kiriting.
+                </p>
+
+                <!-- DEMO CREDENTIALS HELPER BOARD -->
+                <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 text-left text-xs space-y-2 font-mono">
+                    <p class="text-space-gold font-bold font-tech text-center border-b border-slate-800 pb-2"><i class="fa-solid fa-key"></i> TIZIMGA KIRISH UCHUN TEST PAROLLARI:</p>
+                    <p><span class="text-space-purple font-bold">👨‍🏫 O'qituvchi PIN:</span> <code class="text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700">1234</code></p>
+                    <p><span class="text-space-pink font-bold">👨‍👩‍👧 Ota-ona PIN:</span> <code class="text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700">5555</code> (Jasur uchun) / <code class="text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700">7777</code> (Bobur uchun)</p>
+                    <p><span class="text-space-cyan font-bold">🚀 O'quvchi PIN:</span> <code class="text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700">0000</code> (Jasur uchun) / <code class="text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700">8888</code> (Bobur uchun)</p>
+                </div>
+
+                <div class="flex justify-center gap-3 pt-2">
+                    <button onclick="requestRoleAccess('teacher')" class="px-5 py-3 rounded-xl bg-space-purple text-white font-bold font-tech text-xs glow-purple transition transform hover:scale-105">
+                        <i class="fa-solid fa-chalkboard-user mr-1"></i> O'qituvchi Kirish
+                    </button>
+                    <button onclick="requestRoleAccess('parent')" class="px-5 py-3 rounded-xl bg-space-pink text-white font-bold font-tech text-xs transition transform hover:scale-105">
+                        <i class="fa-solid fa-users mr-1"></i> Ota-ona Kirish
+                    </button>
+                    <button onclick="requestRoleAccess('student')" class="px-5 py-3 rounded-xl bg-gradient-to-r from-space-cyan to-blue-600 text-slate-950 font-black font-tech text-xs glow-cyan transition transform hover:scale-105">
+                        <i class="fa-solid fa-rocket mr-1"></i> O'quvchi Kirish
+                    </button>
+                </div>
+            </section>
+
+            <!-- 1. O'QITUVCHI KABINETI -->
+            <section id="sec-teacher" class="space-y-6 hidden">
+                <!-- Header & Grade Selector -->
+                <div class="glass-panel p-6 rounded-3xl border border-space-purple/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold font-tech text-white flex items-center gap-3">
+                            <i class="fa-solid fa-graduation-cap text-space-purple"></i> O'qituvchi Jurnali (eMaktab)
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">O'quvchilarga baholar qo'ying, nishonlar topshiring va parollarni boshqaring.</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <!-- Grade selector 1-9 -->
+                        <div class="flex items-center gap-2 bg-slate-900/90 px-3 py-2 rounded-xl border border-space-cyan/30">
+                            <label class="text-xs font-bold text-slate-300">Sinf:</label>
+                            <select id="teacher-grade-select" onchange="renderTeacherTable()" class="bg-transparent text-space-cyan font-bold font-tech text-sm outline-none cursor-pointer">
+                                <option value="1" class="bg-slate-900">1-Sinf</option>
+                                <option value="2" class="bg-slate-900">2-Sinf</option>
+                                <option value="3" class="bg-slate-900">3-Sinf</option>
+                                <option value="4" class="bg-slate-900">4-Sinf</option>
+                                <option value="5" selected class="bg-slate-900">5-Sinf</option>
+                                <option value="6" class="bg-slate-900">6-Sinf</option>
+                                <option value="7" class="bg-slate-900">7-Sinf</option>
+                                <option value="8" class="bg-slate-900">8-Sinf</option>
+                                <option value="9" class="bg-slate-900">9-Sinf</option>
+                            </select>
+                        </div>
+
+                        <!-- Add Student Button -->
+                        <button onclick="openAddStudentModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-space-cyan to-blue-600 text-slate-950 font-bold text-xs font-tech flex items-center gap-2 glow-cyan transition transform hover:scale-105">
+                            <i class="fa-solid fa-user-plus"></i> Yangi O'quvchi & Parol
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Students Evaluation Table -->
+                <div class="glass-panel rounded-3xl border border-slate-800 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-300">
+                            <thead class="bg-slate-950/80 text-xs font-tech text-space-cyan uppercase border-b border-slate-800">
+                                <tr>
+                                    <th class="p-4">O'quvchi F.I.Sh</th>
+                                    <th class="p-4">Matematika</th>
+                                    <th class="p-4">Fizika</th>
+                                    <th class="p-4">Informatika</th>
+                                    <th class="p-4">O'yin Bal (Raketa)</th>
+                                    <th class="p-4">Nishonlar</th>
+                                    <th class="p-4 text-center">O'quvchi & Ota-ona PIN</th>
+                                    <th class="p-4 text-right">Amallar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teacher-students-list" class="divide-y divide-slate-800/60 font-semibold">
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. OTA-ONA KABINETI -->
+            <section id="sec-parent" class="space-y-6 hidden">
+                <!-- Parent Header -->
+                <div class="glass-panel p-6 rounded-3xl border border-space-pink/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold font-tech text-white flex items-center gap-3">
+                            <i class="fa-solid fa-heart-pulse text-space-pink"></i> Ota-ona Kabineti & eMaktab Reyting
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1" id="parent-welcome-title">Farzandingizning baholash jurnali, davomati va sinfiy kosmik reytingi.</p>
+                    </div>
+
+                    <div class="flex items-center gap-3 bg-slate-950/80 px-4 py-2 rounded-2xl border border-space-pink/30">
+                        <i class="fa-solid fa-user-lock text-space-pink"></i>
+                        <div>
+                            <span class="text-[10px] text-slate-400 block font-bold">Faol Farzand Profile:</span>
+                            <span id="parent-active-child-name" class="text-sm font-bold font-tech text-space-cyan">Jasur Rahimov</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Child Performance Overview Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Overall Score Card -->
+                    <div class="glass-panel p-6 rounded-3xl border border-space-green/30 flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-space-green/20 text-space-green flex items-center justify-center text-2xl font-black">
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">O'rtacha Bahosi</p>
+                            <h3 id="parent-avg-score" class="text-3xl font-black font-tech text-white">4.8 / 5</h3>
+                            <p class="text-[11px] text-space-green font-mono">A'lo ko'rsatkich!</p>
+                        </div>
+                    </div>
+
+                    <!-- Space Rocket Score Card -->
+                    <div class="glass-panel p-6 rounded-3xl border border-space-gold/30 flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-space-gold/20 text-space-gold flex items-center justify-center text-2xl font-black">
+                            <i class="fa-solid fa-rocket"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Raketa O'yin Ochkosi</p>
+                            <h3 id="parent-game-score" class="text-3xl font-black font-tech text-white">1,450 Ochko</h3>
+                            <p class="text-[11px] text-space-gold font-mono">Sinfda top-3 o'rin!</p>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Card -->
+                    <div class="glass-panel p-6 rounded-3xl border border-space-cyan/30 flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-space-cyan/20 text-space-cyan flex items-center justify-center text-2xl font-black">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Davomat</p>
+                            <h3 class="text-3xl font-black font-tech text-white">100%</h3>
+                            <p class="text-[11px] text-space-cyan font-mono">Dars qoldirmagan</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Academic eMaktab Journal & Leaderboard Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- eMaktab Journal -->
+                    <div class="lg:col-span-2 glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
+                        <h3 class="text-lg font-bold font-tech text-space-cyan flex items-center gap-2">
+                            <i class="fa-solid fa-book-open"></i> Fanlar Bo'yicha Baholar Daftari
+                        </h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-slate-300">
+                                <thead class="bg-slate-950/80 text-xs font-tech text-slate-400 uppercase border-b border-slate-800">
+                                    <tr>
+                                        <th class="p-3">Fan Nomi</th>
+                                        <th class="p-3">So'nggi Baho</th>
+                                        <th class="p-3">O'qituvchi Izohi</th>
+                                        <th class="p-3">Nishonlar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="parent-journal-body" class="divide-y divide-slate-800/60 font-semibold">
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Class Leaderboard -->
+                    <div class="glass-panel p-6 rounded-3xl border border-space-purple/40 space-y-4">
+                        <h3 class="text-lg font-bold font-tech text-space-purple flex items-center gap-2">
+                            <i class="fa-solid fa-trophy text-space-gold"></i> Sinf Kosmik Reytingi
+                        </h3>
+                        <div id="parent-leaderboard-list" class="space-y-3">
+                            <!-- Dynamic Leaderboard list -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. O'QUVCHI KABINETI & RAKETA O'YINI -->
+            <section id="sec-student" class="space-y-6 hidden">
+                <!-- Game Header & Controls -->
+                <div class="glass-panel p-6 rounded-3xl border border-space-cyan/40 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold font-tech text-white flex items-center gap-3">
+                            <i class="fa-solid fa-rocket text-space-cyan animate-bounce"></i> Raketa Matematika: Asteroid Breaker
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Matematik misollarni yeching va tushayotgan asteroidlarni raketa lazeringiz bilan urib tushiring!</p>
+                    </div>
+
+                    <div class="flex items-center gap-4 bg-slate-900/80 px-4 py-2.5 rounded-2xl border border-space-cyan/30">
+                        <div class="w-9 h-9 rounded-xl bg-space-cyan/20 text-space-cyan flex items-center justify-center font-bold font-tech">
+                            <i class="fa-solid fa-user-astronaut"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400 block font-bold uppercase">O'quvchi Profile:</span>
+                            <span id="student-active-name" class="text-sm font-bold font-tech text-white">Jasur Rahimov</span>
+                            <span id="student-active-grade" class="text-xs font-mono text-space-gold ml-2">(5-Sinf)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GAME CONTAINER CANVAS -->
+                <div class="relative w-full h-[520px] rounded-3xl overflow-hidden glass-panel border border-space-cyan/50 shadow-2xl flex flex-col justify-between">
+                    <!-- HUD Header Top Overlay -->
+                    <div class="absolute top-0 left-0 w-full p-4 z-20 flex items-center justify-between bg-gradient-to-b from-slate-950/90 to-transparent pointer-events-none">
+                        <!-- Score -->
+                        <div class="flex items-center gap-3 bg-slate-900/80 px-4 py-2 rounded-2xl border border-space-cyan/30 pointer-events-auto">
+                            <i class="fa-solid fa-trophy text-space-gold text-lg"></i>
+                            <div>
+                                <span class="text-[10px] text-slate-400 block uppercase font-bold">Ochko</span>
+                                <span id="game-score-display" class="text-xl font-black font-tech text-space-cyan">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Streak / Combo -->
+                        <div class="flex items-center gap-3 bg-slate-900/80 px-4 py-2 rounded-2xl border border-space-purple/30 pointer-events-auto">
+                            <i class="fa-solid fa-bolt text-space-green text-lg"></i>
+                            <div>
+                                <span class="text-[10px] text-slate-400 block uppercase font-bold">Kombat / Ketma-ket</span>
+                                <span id="game-streak-display" class="text-xl font-black font-tech text-space-green">0x</span>
+                            </div>
+                        </div>
+
+                        <!-- Lives -->
+                        <div class="flex items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-2xl border border-space-pink/30 pointer-events-auto" id="game-lives-container">
+                            <i class="fa-solid fa-heart text-space-pink"></i>
+                            <i class="fa-solid fa-heart text-space-pink"></i>
+                            <i class="fa-solid fa-heart text-space-pink"></i>
+                        </div>
+                    </div>
+
+                    <!-- Game Screen Canvas -->
+                    <canvas id="game-canvas" class="w-full h-full block bg-slate-950/40 cursor-crosshair"></canvas>
+
+                    <!-- Game Over / Start Overlay -->
+                    <div id="game-overlay" class="absolute inset-0 z-30 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
+                        <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-space-purple to-space-cyan p-1 mb-4 glow-cyan">
+                            <div class="w-full h-full bg-slate-950 rounded-[22px] flex items-center justify-center">
+                                <i class="fa-solid fa-rocket text-space-cyan text-4xl"></i>
+                            </div>
+                        </div>
+                        <h3 id="overlay-title" class="text-3xl font-black font-tech text-white mb-2">RAKETA MATEMATIKA</h3>
+                        <p id="overlay-desc" class="text-sm text-slate-300 max-w-md mb-6">Misollar yozilgan asteroidlar tushadi. Klaviaturada javobni yozing va ENTER tugmasini bosing yoki OTISH tugmasini bosing!</p>
+                        <button onclick="startGame()" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-space-cyan via-blue-600 to-space-purple text-slate-950 font-black font-tech text-base glow-cyan transition transform hover:scale-105">
+                            O'YINNI BOSHLASH <i class="fa-solid fa-play ml-2"></i>
+                        </button>
+                    </div>
+
+                    <!-- BOTTOM ANSWER INPUT BAR -->
+                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 w-full max-w-lg px-4">
+                        <form onsubmit="handleAnswerSubmit(event)" class="flex items-center gap-2 glass-panel p-2 rounded-2xl border border-space-cyan/60 glow-cyan">
+                            <input type="number" id="game-answer-input" placeholder="Misol javobini yozing..." autocomplete="off" class="w-full bg-slate-900/90 text-space-cyan font-black font-tech text-xl px-4 py-3 rounded-xl border border-slate-700 focus:border-space-cyan outline-none placeholder:text-slate-600">
+                            <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-space-cyan to-space-green text-slate-950 font-black font-tech text-sm flex items-center gap-2 shrink-0">
+                                OTISH <i class="fa-solid fa-crosshair"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL 1: AUTHENTICATION / LOGIN PIN MODAL -->
+    <div id="modal-login" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-lg flex items-center justify-center p-4 hidden">
+        <div id="modal-login-card" class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full border border-space-cyan/60 shadow-2xl relative text-center space-y-5 glow-cyan">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-space-cyan flex items-center justify-center text-3xl text-space-cyan mx-auto glow-cyan">
+                <i class="fa-solid fa-key" id="auth-modal-icon"></i>
+            </div>
+
+            <div>
+                <h3 class="text-2xl font-black font-tech text-white" id="auth-modal-title">KABINETGA KIRISH</h3>
+                <p class="text-xs text-slate-400 mt-1" id="auth-modal-subtitle">Xavfsizlik parolini (PIN) kiriting</p>
+            </div>
+
+            <!-- Parent/Student Dynamic Selector inside Login if multiple accounts exist -->
+            <div id="auth-user-selector-wrapper" class="hidden text-left space-y-1">
+                <label class="text-xs font-bold text-slate-300">Profilni Tanlang:</label>
+                <select id="auth-user-select" onchange="updateSelectedUserHint()" class="w-full bg-slate-900 border border-space-cyan/40 text-space-cyan font-bold font-tech text-sm px-3 py-2.5 rounded-xl outline-none">
+                    <!-- Dynamic Users Options -->
+                </select>
+            </div>
+
+            <!-- PIN Input form -->
+            <form onsubmit="verifyPinSubmit(event)" class="space-y-4">
+                <div class="relative">
+                    <input type="password" maxlength="8" id="auth-pin-input" placeholder="PAROL / PIN..." autocomplete="off" class="w-full text-center bg-slate-900 border border-slate-700 focus:border-space-cyan text-space-gold font-black font-tech text-2xl tracking-widest px-4 py-3 rounded-2xl outline-none">
+                    <button type="button" onclick="togglePinVisibility()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-sm">
+                        <i class="fa-solid fa-eye" id="pin-eye-icon"></i>
+                    </button>
+                </div>
+
+                <div id="auth-error-msg" class="text-xs text-space-pink font-bold hidden flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-circle-exclamation"></i> Parol noto'g'ri! Qaytadan urinib ko'ring.
+                </div>
+
+                <!-- Demo Hint Box inside Modal -->
+                <div id="auth-demo-hint" class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] text-slate-400 font-mono text-center">
+                    Demo PIN: <span id="auth-hint-pin" class="text-space-cyan font-bold">1234</span>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeLoginModal()" class="w-1/2 py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs font-tech">BEKOR QILISH</button>
+                    <button type="submit" class="w-1/2 py-3 rounded-xl bg-gradient-to-r from-space-cyan to-blue-600 text-slate-950 font-black text-xs font-tech glow-cyan">KIRISH <i class="fa-solid fa-right-to-bracket ml-1"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ADD / EDIT STUDENT -->
+    <div id="modal-student" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full border border-space-cyan/50 shadow-2xl relative">
+            <button onclick="closeStudentModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-xl font-bold font-tech text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-user-plus text-space-cyan"></i> Yangi O'quvchi & Parol Qo'shish
+            </h3>
+            
+            <form onsubmit="saveStudent(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-300 block mb-1">O'quvchi Ismi va Familiyasi:</label>
+                    <input type="text" id="m-student-name" required placeholder="Masalan: Laylo Karimova" class="w-full bg-slate-900 border border-slate-700 text-white font-semibold text-sm px-4 py-2.5 rounded-xl outline-none focus:border-space-cyan">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-300 block mb-1">Sinfi:</label>
+                    <select id="m-student-grade" class="w-full bg-slate-900 border border-slate-700 text-space-cyan font-bold font-tech text-sm px-4 py-2.5 rounded-xl outline-none">
+                        <option value="1">1-Sinf</option>
+                        <option value="2">2-Sinf</option>
+                        <option value="3">3-Sinf</option>
+                        <option value="4">4-Sinf</option>
+                        <option value="5" selected>5-Sinf</option>
+                        <option value="6">6-Sinf</option>
+                        <option value="7">7-Sinf</option>
+                        <option value="8">8-Sinf</option>
+                        <option value="9">9-Sinf</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-bold text-slate-300 block mb-1">O'quvchi PIN:</label>
+                        <input type="text" id="m-student-pin" required maxlength="6" value="1111" class="w-full bg-slate-900 border border-slate-700 text-space-cyan font-black font-tech text-sm px-3 py-2 rounded-xl outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-300 block mb-1">Ota-ona PIN:</label>
+                        <input type="text" id="m-parent-pin" required maxlength="6" value="9999" class="w-full bg-slate-900 border border-slate-700 text-space-pink font-black font-tech text-sm px-3 py-2 rounded-xl outline-none">
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-800 flex gap-3">
+                    <button type="button" onclick="closeStudentModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs font-tech">BEKOR QILISH</button>
+                    <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-space-cyan to-blue-600 text-slate-950 font-black text-xs font-tech glow-cyan">SAQLASH</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: GRADE & BADGE ASSIGN -->
+    <div id="modal-grade" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full border border-space-purple/50 shadow-2xl relative">
+            <button onclick="closeGradeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-xl font-bold font-tech text-white mb-1 flex items-center gap-2">
+                <i class="fa-solid fa-star text-space-gold"></i> Baholash & Parollarni Tahrirlash
+            </h3>
+            <p id="m-grade-student-title" class="text-xs text-space-cyan font-bold mb-4">O'quvchi: Jasur Rahimov</p>
+
+            <form onsubmit="saveGrade(event)" class="space-y-4">
+                <input type="hidden" id="m-grade-student-id">
+                
+                <div>
+                    <label class="text-xs font-bold text-slate-300 block mb-1">Fanni Tanlang:</label>
+                    <select id="m-grade-subject" class="w-full bg-slate-900 border border-slate-700 text-white font-semibold text-sm px-4 py-2.5 rounded-xl outline-none">
+                        <option value="matematika">Matematika</option>
+                        <option value="fizika">Fizika</option>
+                        <option value="informatika">Informatika</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-300 block mb-1">Baho (5, 4, 3, 2):</label>
+                    <input type="number" id="m-grade-val" min="2" max="5" value="5" required class="w-full bg-slate-900 border border-slate-700 text-space-gold font-black font-tech text-lg px-4 py-2.5 rounded-xl outline-none">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-300 block mb-1">O'qituvchi Izohi:</label>
+                    <input type="text" id="m-grade-comment" placeholder="Masalan: Juda faol qatnashdi!" class="w-full bg-slate-900 border border-slate-700 text-white font-semibold text-sm px-4 py-2.5 rounded-xl outline-none">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-300 block mb-1">Nishon / Medal berish:</label>
+                    <select id="m-grade-badge" class="w-full bg-slate-900 border border-slate-700 text-space-cyan font-bold text-sm px-4 py-2.5 rounded-xl outline-none">
+                        <option value="">Nishonsiz</option>
+                        <option value="🥇 A'lochi Star">🥇 A'lochi Star</option>
+                        <option value="🚀 Kosmik Daho">🚀 Kosmik Daho</option>
+                        <option value="⚡ Tezkor Matematik">⚡ Tezkor Matematik</option>
+                        <option value="🏆 Sinf Lideri">🏆 Sinf Lideri</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800">
+                    <div>
+                        <label class="text-xs font-bold text-slate-300 block mb-1">O'quvchi PIN:</label>
+                        <input type="text" id="m-edit-student-pin" required maxlength="6" class="w-full bg-slate-900 border border-slate-700 text-space-cyan font-black font-tech text-sm px-3 py-2 rounded-xl outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-300 block mb-1">Ota-ona PIN:</label>
+                        <input type="text" id="m-edit-parent-pin" required maxlength="6" class="w-full bg-slate-900 border border-slate-700 text-space-pink font-black font-tech text-sm px-3 py-2 rounded-xl outline-none">
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-800 flex gap-3">
+                    <button type="button" onclick="closeGradeModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs font-tech">BEKOR QILISH</button>
+                    <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-space-purple to-space-pink text-white font-black text-xs font-tech glow-purple">SAQLASH</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APP & GAME LOGIC -->
+    <script>
+        // INITIAL DATA & STORAGE WITH PIN CODES
+        let teacherPin = "1234";
+
+        let studentsData = [
+            {
+                id: 1,
+                name: "Jasur Rahimov",
+                grade: "5",
+                studentPin: "0000",
+                parentPin: "5555",
+                gameScore: 1850,
+                grades: {
+                    matematika: { score: 5, comment: "Misollarni a'lo yechdi", badge: "🚀 Kosmik Daho" },
+                    fizika: { score: 5, comment: "Ajoyib fikrlash", badge: "🥇 A'lochi Star" },
+                    informatika: { score: 5, comment: "Dasturlashda lider", badge: "⚡ Tezkor Matematik" }
+                }
+            },
+            {
+                id: 2,
+                name: "Laylo Olimova",
+                grade: "5",
+                studentPin: "2222",
+                parentPin: "3333",
+                gameScore: 1420,
+                grades: {
+                    matematika: { score: 5, comment: "Juda qunt bilan ishladi", badge: "🥇 A'lochi Star" },
+                    fizika: { score: 4, comment: "Yaxshi", badge: "" },
+                    informatika: { score: 5, comment: "Topshiriq bajarildi", badge: "" }
+                }
+            },
+            {
+                id: 3,
+                name: "Bobur Smadiyorov",
+                grade: "8",
+                studentPin: "8888",
+                parentPin: "7777",
+                gameScore: 2100,
+                grades: {
+                    matematika: { score: 5, comment: "Tenglamalarni tez yechdi", badge: "🏆 Sinf Lideri" },
+                    fizika: { score: 5, comment: "Natijasi yuqori", badge: "🚀 Kosmik Daho" },
+                    informatika: { score: 5, comment: "A'lochilar qatorida", badge: "" }
+                }
+            }
+        ];
+
+        let activeRole = 'none'; // 'teacher', 'parent', 'student', 'none'
+        let targetRoleToLogin = null;
+        let authenticatedChildId = null;
+        let soundEnabled = true;
+
+        // Web Audio Synthesizer for SFX
+        let audioCtx = null;
+        function playSfx(type) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'laser') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'explosion') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'success') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.linearRampToValueAtTime(110, now + 0.2);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                }
+            } catch(e) {}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            icon.className = soundEnabled ? "fa-solid fa-volume-high text-space-cyan" : "fa-solid fa-volume-xmark text-slate-500";
+        }
+
+        // --- AUTHENTICATION & LOGIN MODAL SYSTEM ---
+        function requestRoleAccess(role) {
+            targetRoleToLogin = role;
+            document.getElementById('auth-error-msg').classList.add('hidden');
+            document.getElementById('auth-pin-input').value = '';
+
+            const title = document.getElementById('auth-modal-title');
+            const sub = document.getElementById('auth-modal-subtitle');
+            const icon = document.getElementById('auth-modal-icon');
+            const selectorWrapper = document.getElementById('auth-user-selector-wrapper');
+            const hintPin = document.getElementById('auth-hint-pin');
+
+            if (role === 'teacher') {
+                title.innerText = "O'QITUVCHI KABINETI";
+                sub.innerText = "O'qituvchi maxsus PIN-parolini kiriting";
+                icon.className = "fa-solid fa-chalkboard-user text-space-purple";
+                selectorWrapper.classList.add('hidden');
+                hintPin.innerText = teacherPin;
+            } else if (role === 'parent') {
+                title.innerText = "OTA-ONA KABINETI";
+                sub.innerText = "Farzand profilini tanlang va PIN-parolni kiriting";
+                icon.className = "fa-solid fa-users text-space-pink";
+                selectorWrapper.classList.remove('hidden');
+                populateUserSelectOptions('parentPin');
+            } else if (role === 'student') {
+                title.innerText = "O'QUVCHI KABINETI & O'YIN";
+                sub.innerText = "O'z profilingizni tanlang va PIN-parolni kiriting";
+                icon.className = "fa-solid fa-rocket text-space-cyan";
+                selectorWrapper.classList.remove('hidden');
+                populateUserSelectOptions('studentPin');
+            }
+
+            document.getElementById('modal-login').classList.remove('hidden');
+            setTimeout(() => document.getElementById('auth-pin-input').focus(), 100);
+        }
+
+        function populateUserSelectOptions(pinField) {
+            const select = document.getElementById('auth-user-select');
+            select.innerHTML = '';
+            studentsData.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.innerText = `${s.name} (${s.grade}-Sinf)`;
+                select.appendChild(opt);
+            });
+            updateSelectedUserHint();
+        }
+
+        function updateSelectedUserHint() {
+            if (targetRoleToLogin === 'teacher') return;
+            const selectId = parseInt(document.getElementById('auth-user-select').value);
+            const student = studentsData.find(s => s.id === selectId);
+            if (student) {
+                const pin = targetRoleToLogin === 'parent' ? student.parentPin : student.studentPin;
+                document.getElementById('auth-hint-pin').innerText = pin;
+            }
+        }
+
+        function togglePinVisibility() {
+            const input = document.getElementById('auth-pin-input');
+            const icon = document.getElementById('pin-eye-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = "fa-solid fa-eye-slash text-space-cyan";
+            } else {
+                input.type = 'password';
+                icon.className = "fa-solid fa-eye text-slate-400";
+            }
+        }
+
+        function closeLoginModal() {
+            document.getElementById('modal-login').classList.add('hidden');
+        }
+
+        function verifyPinSubmit(e) {
+            e.preventDefault();
+            const inputPin = document.getElementById('auth-pin-input').value.trim();
+            const errorMsg = document.getElementById('auth-error-msg');
+            const card = document.getElementById('modal-login-card');
+
+            let isValid = false;
+
+            if (targetRoleToLogin === 'teacher') {
+                if (inputPin === teacherPin) {
+                    isValid = true;
+                }
+            } else {
+                const selectedId = parseInt(document.getElementById('auth-user-select').value);
+                const student = studentsData.find(s => s.id === selectedId);
+                if (student) {
+                    const correctPin = targetRoleToLogin === 'parent' ? student.parentPin : student.studentPin;
+                    if (inputPin === correctPin) {
+                        isValid = true;
+                        authenticatedChildId = student.id;
+                    }
+                }
+            }
+
+            if (isValid) {
+                closeLoginModal();
+                playSfx('success');
+                grantRoleAccess(targetRoleToLogin);
+            } else {
+                playSfx('error');
+                errorMsg.classList.remove('hidden');
+                card.classList.add('animate-shake');
+                setTimeout(() => card.classList.remove('animate-shake'), 400);
+            }
+        }
+
+        function grantRoleAccess(role) {
+            activeRole = role;
+
+            document.getElementById('sec-locked').classList.add('hidden');
+
+            ['teacher', 'parent', 'student'].forEach(r => {
+                const sec = document.getElementById(`sec-${r}`);
+                const tab = document.getElementById(`tab-${r}`);
+                if (r === role) {
+                    sec.classList.remove('hidden');
+                    tab.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold font-tech transition flex items-center gap-2 bg-space-purple text-white glow-purple";
+                } else {
+                    sec.classList.add('hidden');
+                    tab.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold font-tech transition flex items-center gap-2 text-slate-400 hover:text-white";
+                }
+            });
+
+            if (role === 'teacher') renderTeacherTable();
+            if (role === 'parent') renderParentDashboard();
+            if (role === 'student') initStudentGameProfile();
+        }
+
+        function lockCurrentSession() {
+            activeRole = 'none';
+            authenticatedChildId = null;
+            playSfx('error');
+
+            ['teacher', 'parent', 'student'].forEach(r => {
+                document.getElementById(`sec-${r}`).classList.add('hidden');
+                document.getElementById(`tab-${r}`).className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold font-tech transition flex items-center gap-2 text-slate-400 hover:text-white";
+            });
+
+            document.getElementById('sec-locked').classList.remove('hidden');
+        }
+
+        // --- 1. TEACHER MODULE LOGIC ---
+        function renderTeacherTable() {
+            const selectedGrade = document.getElementById('teacher-grade-select').value;
+            const list = document.getElementById('teacher-students-list');
+            list.innerHTML = '';
+
+            const filtered = studentsData.filter(s => s.grade === selectedGrade);
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-500 font-mono">Ushbu sinfda hali o'quvchilar yo'q. "Yangi O'quvchi" tugmasini bosing.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-900/50 transition";
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-white flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-space-purple/30 border border-space-purple flex items-center justify-center text-xs text-space-cyan font-tech">
+                            ${s.name.charAt(0)}
+                        </div>
+                        ${s.name}
+                    </td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-lg bg-space-gold/20 text-space-gold font-tech border border-space-gold/40">${s.grades.matematika ? s.grades.matematika.score : '-'}</span></td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-lg bg-space-cyan/20 text-space-cyan font-tech border border-space-cyan/40">${s.grades.fizika ? s.grades.fizika.score : '-'}</span></td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-lg bg-space-green/20 text-space-green font-tech border border-space-green/40">${s.grades.informatika ? s.grades.informatika.score : '-'}</span></td>
+                    <td class="p-4 font-tech text-space-cyan">${s.gameScore} pts</td>
+                    <td class="p-4 text-xs font-bold text-space-gold">${getBadgesHtml(s)}</td>
+                    <td class="p-4 text-center font-mono text-xs">
+                        <span class="text-space-cyan font-bold block">O'quvchi: ${s.studentPin}</span>
+                        <span class="text-space-pink font-bold block">Ota-ona: ${s.parentPin}</span>
+                    </td>
+                    <td class="p-4 text-right">
+                        <button onclick="openGradeModal(${s.id})" class="px-3 py-1.5 rounded-lg bg-space-purple/30 hover:bg-space-purple/60 text-xs text-white border border-space-purple/50 font-tech">
+                            <i class="fa-solid fa-pen"></i> Tahrirlash
+                        </button>
+                    </td>
+                `;
+                list.appendChild(tr);
+            });
+        }
+
+        function getBadgesHtml(student) {
+            let badges = [];
+            Object.values(student.grades).forEach(g => {
+                if (g.badge && !badges.includes(g.badge)) badges.push(g.badge);
+            });
+            return badges.length ? badges.join(', ') : '<span class="text-slate-600">-</span>';
+        }
+
+        function openAddStudentModal() {
+            document.getElementById('modal-student').classList.remove('hidden');
+        }
+        function closeStudentModal() {
+            document.getElementById('modal-student').classList.add('hidden');
+        }
+
+        function saveStudent(e) {
+            e.preventDefault();
+            const name = document.getElementById('m-student-name').value;
+            const grade = document.getElementById('m-student-grade').value;
+            const studentPin = document.getElementById('m-student-pin').value;
+            const parentPin = document.getElementById('m-parent-pin').value;
+
+            const newId = studentsData.length + 1;
+            const newStudent = {
+                id: newId,
+                name: name,
+                grade: grade,
+                studentPin: studentPin,
+                parentPin: parentPin,
+                gameScore: 0,
+                grades: {
+                    matematika: { score: 5, comment: "Yangi o'quvchi", badge: "" },
+                    fizika: { score: 5, comment: "Yangi o'quvchi", badge: "" },
+                    informatika: { score: 5, comment: "Yangi o'quvchi", badge: "" }
+                }
+            };
+
+            studentsData.push(newStudent);
+            closeStudentModal();
+            renderTeacherTable();
+            playSfx('success');
+        }
+
+        function openGradeModal(studentId) {
+            const s = studentsData.find(x => x.id === studentId);
+            if (!s) return;
+            document.getElementById('m-grade-student-id').value = s.id;
+            document.getElementById('m-grade-student-title').innerText = `O'quvchi: ${s.name} (${s.grade}-Sinf)`;
+            document.getElementById('m-edit-student-pin').value = s.studentPin;
+            document.getElementById('m-edit-parent-pin').value = s.parentPin;
+            document.getElementById('modal-grade').classList.remove('hidden');
+        }
+        function closeGradeModal() {
+            document.getElementById('modal-grade').classList.add('hidden');
+        }
+
+        function saveGrade(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('m-grade-student-id').value);
+            const subj = document.getElementById('m-grade-subject').value;
+            const score = parseInt(document.getElementById('m-grade-val').value);
+            const comment = document.getElementById('m-grade-comment').value;
+            const badge = document.getElementById('m-grade-badge').value;
+            const studentPin = document.getElementById('m-edit-student-pin').value;
+            const parentPin = document.getElementById('m-edit-parent-pin').value;
+
+            const student = studentsData.find(x => x.id === id);
+            if (student) {
+                student.grades[subj] = { score, comment, badge };
+                student.studentPin = studentPin;
+                student.parentPin = parentPin;
+            }
+
+            closeGradeModal();
+            renderTeacherTable();
+            playSfx('success');
+        }
+
+        // --- 2. PARENT MODULE LOGIC ---
+        function renderParentDashboard() {
+            const child = studentsData.find(x => x.id === authenticatedChildId) || studentsData[0];
+            if (!child) return;
+
+            document.getElementById('parent-active-child-name').innerText = `${child.name} (${child.grade}-Sinf)`;
+
+            // Calculate average score
+            const gradesList = Object.values(child.grades).map(g => g.score);
+            const avg = (gradesList.reduce((a, b) => a + b, 0) / gradesList.length).toFixed(1);
+
+            document.getElementById('parent-avg-score').innerText = `${avg} / 5`;
+            document.getElementById('parent-game-score').innerText = `${child.gameScore} Ochko`;
+
+            // Render eMaktab Journal
+            const body = document.getElementById('parent-journal-body');
+            body.innerHTML = '';
+
+            const subjectsMap = {
+                matematika: "Matematika",
+                fizika: "Fizika",
+                informatika: "Informatika"
+            };
+
+            Object.keys(child.grades).forEach(subjKey => {
+                const g = child.grades[subjKey];
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-900/40";
+                tr.innerHTML = `
+                    <td class="p-3 text-white font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-book text-space-cyan"></i> ${subjectsMap[subjKey]}
+                    </td>
+                    <td class="p-3"><span class="px-2.5 py-1 rounded-lg bg-space-gold/20 text-space-gold font-tech border border-space-gold/40">${g.score}</span></td>
+                    <td class="p-3 text-xs text-slate-300 font-normal">${g.comment || 'Izoh yo\'q'}</td>
+                    <td class="p-3 text-xs text-space-gold font-bold">${g.badge || '-'}</td>
+                `;
+                body.appendChild(tr);
+            });
+
+            // Render Leaderboard
+            renderLeaderboard(child.grade);
+        }
+
+        function renderLeaderboard(grade) {
+            const list = document.getElementById('parent-leaderboard-list');
+            list.innerHTML = '';
+
+            const sameGrade = studentsData
+                .filter(s => s.grade === grade)
+                .sort((a, b) => b.gameScore - a.gameScore);
+
+            sameGrade.forEach((s, idx) => {
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-2xl flex items-center justify-between border ${idx === 0 ? 'bg-space-gold/10 border-space-gold/40' : 'glass-card border-slate-800'}`;
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-full ${idx === 0 ? 'bg-space-gold text-slate-950' : 'bg-slate-800 text-slate-300'} flex items-center justify-center font-black font-tech text-xs">
+                            ${idx + 1}
+                        </span>
+                        <div>
+                            <p class="text-xs font-bold text-white">${s.name}</p>
+                            <p class="text-[10px] text-slate-400 font-mono">${s.grade}-Sinf</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-black font-tech text-space-cyan">${s.gameScore} pts</span>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // --- 3. STUDENT MODULE & RAKETA GAME ENGINE ---
+        let gameCanvas, ctx;
+        let gameActive = false;
+        let score = 0;
+        let streak = 0;
+        let lives = 3;
+        let asteroids = [];
+        let lasers = [];
+        let particles = [];
+        let activeStudent = null;
+        let spawnInterval = null;
+
+        function initStudentGameProfile() {
+            activeStudent = studentsData.find(x => x.id === authenticatedChildId) || studentsData[0];
+            if (activeStudent) {
+                document.getElementById('student-active-name').innerText = activeStudent.name;
+                document.getElementById('student-active-grade').innerText = `(${activeStudent.grade}-Sinf)`;
+            }
+        }
+
+        function initGameCanvas() {
+            gameCanvas = document.getElementById('game-canvas');
+            ctx = gameCanvas.getContext('2d');
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        function resizeCanvas() {
+            if (!gameCanvas) return;
+            gameCanvas.width = gameCanvas.parentElement.clientWidth;
+            gameCanvas.height = gameCanvas.parentElement.clientHeight;
+        }
+
+        // Grade-based Math Equation Generator (1-9 Grades)
+        function generateMathProblem(gradeStr) {
+            const grade = parseInt(gradeStr);
+            let num1, num2, answer, problemStr;
+
+            if (grade === 1) {
+                num1 = Math.floor(Math.random() * 10) + 1;
+                num2 = Math.floor(Math.random() * 10) + 1;
+                answer = num1 + num2;
+                problemStr = `${num1} + ${num2}`;
+            } else if (grade === 2 || grade === 3) {
+                num1 = Math.floor(Math.random() * 20) + 5;
+                num2 = Math.floor(Math.random() * 15) + 1;
+                const isPlus = Math.random() > 0.5;
+                answer = isPlus ? num1 + num2 : num1 - num2;
+                problemStr = `${num1} ${isPlus ? '+' : '-'} ${num2}`;
+            } else if (grade === 4 || grade === 5) {
+                num1 = Math.floor(Math.random() * 12) + 2;
+                num2 = Math.floor(Math.random() * 9) + 2;
+                answer = num1 * num2;
+                problemStr = `${num1} × ${num2}`;
+            } else if (grade === 6 || grade === 7) {
+                const x = Math.floor(Math.random() * 10) + 2;
+                const a = Math.floor(Math.random() * 15) + 1;
+                answer = x;
+                problemStr = `x + ${a} = ${x + a}`;
+            } else {
+                const x = Math.floor(Math.random() * 8) + 2;
+                const m = Math.floor(Math.random() * 4) + 2;
+                const c = Math.floor(Math.random() * 10) + 1;
+                answer = x;
+                problemStr = `${m}x + ${c} = ${m * x + c}`;
+            }
+
+            return { problemStr, answer };
+        }
+
+        function startGame() {
+            if (!activeStudent) initStudentGameProfile();
+
+            score = 0;
+            streak = 0;
+            lives = 3;
+            asteroids = [];
+            lasers = [];
+            particles = [];
+            gameActive = true;
+
+            document.getElementById('game-score-display').innerText = '0';
+            document.getElementById('game-streak-display').innerText = '0x';
+            updateLivesDisplay();
+
+            document.getElementById('game-overlay').classList.add('hidden');
+            document.getElementById('game-answer-input').focus();
+
+            if (spawnInterval) clearInterval(spawnInterval);
+            spawnInterval = setInterval(spawnAsteroid, 2800);
+
+            spawnAsteroid();
+            requestAnimationFrame(gameLoop);
+            playSfx('success');
+        }
+
+        function updateLivesDisplay() {
+            const container = document.getElementById('game-lives-container');
+            container.innerHTML = '';
+            for (let i = 0; i < lives; i++) {
+                container.innerHTML += `<i class="fa-solid fa-heart text-space-pink"></i>`;
+            }
+        }
+
+        function spawnAsteroid() {
+            if (!gameActive) return;
+            const math = generateMathProblem(activeStudent ? activeStudent.grade : "5");
+
+            const asteroid = {
+                x: Math.random() * (gameCanvas.width - 120) + 60,
+                y: -40,
+                radius: 35,
+                speed: 0.8 + Math.random() * 0.6,
+                problem: math.problemStr,
+                answer: math.answer
+            };
+            asteroids.push(asteroid);
+        }
+
+        function handleAnswerSubmit(e) {
+            e.preventDefault();
+            if (!gameActive) return;
+
+            const input = document.getElementById('game-answer-input');
+            const val = parseInt(input.value);
+            input.value = '';
+
+            if (isNaN(val)) return;
+
+            const matchIdx = asteroids.findIndex(a => a.answer === val);
+
+            if (matchIdx !== -1) {
+                const target = asteroids[matchIdx];
+
+                lasers.push({
+                    x1: gameCanvas.width / 2,
+                    y1: gameCanvas.height - 40,
+                    x2: target.x,
+                    y2: target.y,
+                    life: 1.0
+                });
+
+                createExplosionParticles(target.x, target.y);
+
+                playSfx('laser');
+                playSfx('explosion');
+
+                streak++;
+                const addedPoints = 100 * streak;
+                score += addedPoints;
+
+                if (activeStudent) {
+                    activeStudent.gameScore += addedPoints;
+                }
+
+                document.getElementById('game-score-display').innerText = score;
+                document.getElementById('game-streak-display').innerText = `${streak}x`;
+
+                asteroids.splice(matchIdx, 1);
+            } else {
+                streak = 0;
+                document.getElementById('game-streak-display').innerText = '0x';
+            }
+        }
+
+        function createExplosionParticles(x, y) {
+            for (let i = 0; i < 20; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    color: Math.random() > 0.5 ? '#00f2fe' : '#ff0080',
+                    alpha: 1.0
+                });
+            }
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+
+            ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+            const rx = gameCanvas.width / 2;
+            const ry = gameCanvas.height - 40;
+
+            ctx.save();
+            ctx.translate(rx, ry);
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00f2fe';
+            ctx.fillStyle = '#00f2fe';
+            ctx.beginPath();
+            ctx.moveTo(0, -25);
+            ctx.lineTo(-15, 15);
+            ctx.lineTo(15, 15);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
+            for (let i = lasers.length - 1; i >= 0; i--) {
+                const l = lasers[i];
+                ctx.strokeStyle = `rgba(0, 242, 254, ${l.life})`;
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(l.x1, l.y1);
+                ctx.lineTo(l.x2, l.y2);
+                ctx.stroke();
+
+                l.life -= 0.1;
+                if (l.life <= 0) lasers.splice(i, 1);
+            }
+
+            for (let i = asteroids.length - 1; i >= 0; i--) {
+                const a = asteroids[i];
+                a.y += a.speed;
+
+                ctx.save();
+                ctx.fillStyle = 'rgba(24, 32, 68, 0.9)';
+                ctx.strokeStyle = '#7928ca';
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#7928ca';
+                ctx.beginPath();
+                ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 15px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(a.problem, a.x, a.y);
+                ctx.restore();
+
+                if (a.y + a.radius >= gameCanvas.height - 50) {
+                    asteroids.splice(i, 1);
+                    lives--;
+                    streak = 0;
+                    document.getElementById('game-streak-display').innerText = '0x';
+                    updateLivesDisplay();
+                    playSfx('explosion');
+
+                    if (lives <= 0) {
+                        endGame();
+                        return;
+                    }
+                }
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.03;
+
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = Math.max(0, p.alpha);
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+
+                if (p.alpha <= 0) particles.splice(i, 1);
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endGame() {
+            gameActive = false;
+            if (spawnInterval) clearInterval(spawnInterval);
+
+            document.getElementById('overlay-title').innerText = "O'YIN TUGADI!";
+            document.getElementById('overlay-desc').innerText = `Siz ${score} ochko to'pladingiz va bu natijangiz eMaktab reytigingizga qo'shildi!`;
+            document.getElementById('game-overlay').classList.remove('hidden');
+        }
+
+        // Dynamic Background Stars Animation
+        function initSpaceBackground() {
+            const canvas = document.getElementById('stars-canvas');
+            const c = canvas.getContext('2d');
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            const stars = Array.from({ length: 120 }, () => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 1.8,
+                speed: Math.random() * 0.4 + 0.1
+            }));
+
+            function drawStars() {
+                c.clearRect(0, 0, canvas.width, canvas.height);
+                c.fillStyle = '#ffffff';
+
+                stars.forEach(s => {
+                    s.y += s.speed;
+                    if (s.y > canvas.height) s.y = 0;
+                    c.beginPath();
+                    c.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                    c.fill();
+                });
+                requestAnimationFrame(drawStars);
+            }
+            drawStars();
+        }
+
+        // APP INIT ON LOAD
+        window.onload = () => {
+            initSpaceBackground();
+            initGameCanvas();
+        };
+    </script>
+</body>
+</html>
